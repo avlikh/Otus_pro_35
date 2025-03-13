@@ -395,7 +395,7 @@ cd config
 sudo openvpn --config client.ovpn --daemon
 ```
     
-Попробуем пингануть сервер Openvpn:
+Попробуем пингануть сервер OpenVPN:
 ```
 ping -c2 10.10.10.1
 ```
