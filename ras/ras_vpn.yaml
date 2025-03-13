@@ -1,0 +1,7 @@
+---
+- name: OpenVpn Server deploy
+  hosts: all
+  gather_facts: true
+  become: yes
+  roles:
+    - openvpn

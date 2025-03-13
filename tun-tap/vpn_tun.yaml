@@ -1,0 +1,50 @@
+---
+- name: OpenVPN server setup
+  hosts: server
+  gather_facts: true
+  become: yes
+  tasks:
+    - name: Generate OpenVPN server sonfig
+      template:
+        src: files/templates/server1.conf.j2
+        dest: /etc/openvpn/server.conf
+      vars:
+        server_ip: 10.10.10.1
+        remote_server: ""
+
+    - name: Daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: OpenVPN server restart
+      systemd:
+        name: openvpn@server
+        state: restarted
+
+- name: OpenVPN client setup
+  hosts: client
+  gather_facts: true
+  become: yes
+  tasks:
+
+    - name: Generate OpenVpn config
+      template:
+        src: files/templates/server1.conf.j2
+        dest: /etc/openvpn/server.conf
+      vars:
+        server_ip: 10.10.10.2
+        remote_server: 192.168.56.10
+
+    - name: Generate OpenVpn service
+      template:
+        src: files/templates/openvpn@.service.j2
+        dest: /etc/systemd/system/openvpn@.service
+
+    - name: Daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: OpenVPN server restart
+      systemd:
+        name: openvpn@server
+        state: restarted

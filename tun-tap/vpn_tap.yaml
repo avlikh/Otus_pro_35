@@ -1,0 +1,85 @@
+---
+- name: OpenVPN server setup
+  hosts: all
+  gather_facts: true
+  become: yes
+  tasks:
+    - name: Install packages
+      apt:
+        name:
+          - openvpn
+          - iperf3
+        update_cache: yes
+        state: present
+- name: OpenVPN server setup
+  hosts: server
+  gather_facts: true
+  become: yes
+  tasks:
+    - name: Static key generation
+      command: 
+        cmd: openvpn --genkey secret /etc/openvpn/static.key
+        creates: /etc/openvpn/static.key
+
+    - name: Send static key to managed host
+      fetch:
+        src: /etc/openvpn/static.key
+        dest: "{{ playbook_dir }}/files/static.key"
+        flat: yes
+
+    - name: Generate OpenVpn config
+      template:
+        src: files/templates/server.conf.j2
+        dest: /etc/openvpn/server.conf
+      vars:
+        server_ip: 10.10.10.1
+        remote_server: ""
+
+    - name: Generate OpenVpn service
+      template:
+        src: files/templates/openvpn@.service.j2
+        dest: /etc/systemd/system/openvpn@.service
+
+    - name: Daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: OpenVPN service start
+      systemd:
+        name: openvpn@server
+        enabled: yes
+        state: started
+
+- name: OpenVPN client setup
+  hosts: client
+  gather_facts: true
+  become: yes
+  tasks:
+    - name: Copy static.key from management host
+      copy:
+        src: "{{ playbook_dir }}/files/static.key"
+        dest: /etc/openvpn/static.key
+        mode: 0600
+
+    - name: Geneate openvpn config
+      template:
+        src: files/templates/server.conf.j2
+        dest: /etc/openvpn/server.conf
+      vars:
+        server_ip: 10.10.10.2
+        remote_server: 192.168.56.10
+
+    - name: Generate OpenVpn service
+      template:
+        src: files/templates/openvpn@.service.j2
+        dest: /etc/systemd/system/openvpn@.service
+
+    - name: Daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: OpenVPN service start
+      systemd:
+        name: openvpn@server
+        enabled: yes
+        state: started
