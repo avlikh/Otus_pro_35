@@ -379,3 +379,40 @@ ovpnserver                 : ok=15   changed=13   unreachable=0    failed=0    s
 
 ```
 </details>    
+     
+Установим клиента OpenVPN на управляющую (хостовую) машину:
+```
+apt install openvpn
+```
+Зайдем в папку с ключами и конфигами OpenVPN:
+```
+cd config
+```
+* Примечание: в нашем примере, полный путь к папке будет: /opt/otus/vpn/ras/config
+     
+Запустим OpenVPN клиента в фоновом режиме:
+```
+sudo openvpn --config client.ovpn --daemon
+```
+    
+Попробуем пингануть сервер Openvpn:
+```
+ping -c2 10.10.10.1
+```
+<details>
+<summary> результат выполнения команды </summary>
+
+```
+root@deb4likh:/opt/otus/vpn/ras/config# ping -c2 10.10.10.1
+PING 10.10.10.1 (10.10.10.1) 56(84) bytes of data.
+64 bytes from 10.10.10.1: icmp_seq=1 ttl=64 time=0.740 ms
+64 bytes from 10.10.10.1: icmp_seq=2 ttl=64 time=2.05 ms
+
+--- 10.10.10.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1026ms
+rtt min/avg/max/mdev = 0.740/1.393/2.047/0.653 ms
+
+```
+</details>
+    
+Видим что туннель работает.
